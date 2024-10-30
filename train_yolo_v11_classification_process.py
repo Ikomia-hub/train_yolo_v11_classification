@@ -197,7 +197,8 @@ class TrainYoloV11ClassificationFactory(dataprocess.CTaskFactory):
         # URL of documentation
         self.info.documentation_link = "https://docs.ultralytics.com/"
         # Code source repository
-        self.info.repository = "https://github.com/ultralytics/ultralytics"
+        self.info.repository = "https://github.com/Ikomia-hub/train_yolo_v11_classification"
+        self.info.original_repository = "https://github.com/ultralytics/ultralytics"
         # Keywords used for search
         self.info.keywords = "YOLO, classification, ultralytics, imagenet"
         self.info.algo_type = core.AlgoType.TRAIN
