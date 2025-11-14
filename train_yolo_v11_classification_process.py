@@ -1,8 +1,8 @@
 import copy
 import os
 from datetime import datetime
-
 import yaml
+
 import torch
 
 from ultralytics import download, settings, YOLO
@@ -10,6 +10,7 @@ from ultralytics import download, settings, YOLO
 from ikomia import core, dataprocess
 from ikomia.core.task import TaskParam
 from ikomia.dnn import dnntrain
+
 from train_yolo_v11_classification.utils import custom_callbacks
 
 # Update a setting
@@ -24,8 +25,7 @@ class TrainYoloV11ClassificationParam(TaskParam):
 
     def __init__(self):
         TaskParam.__init__(self)
-        dataset_folder = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), "dataset")
+        dataset_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "dataset")
         self.cfg["dataset_folder"] = dataset_folder
         self.cfg["model_name"] = "yolo11m-cls"
         self.cfg["epochs"] = 100
@@ -40,8 +40,7 @@ class TrainYoloV11ClassificationParam(TaskParam):
         self.cfg["lrf"] = 0.01
         self.cfg["patience"] = 100
         self.cfg["config_file"] = ""
-        self.cfg["output_folder"] = os.path.dirname(
-            os.path.realpath(__file__)) + "/runs/"
+        self.cfg["output_folder"] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "runs/")
 
     def set_values(self, param_map):
         self.cfg["dataset_folder"] = str(param_map["dataset_folder"])
@@ -57,8 +56,7 @@ class TrainYoloV11ClassificationParam(TaskParam):
         self.cfg["lrf"] = float(param_map["lrf"])
         self.cfg["patience"] = int(param_map["patience"])
         self.cfg["config_file"] = param_map["config_file"]
-        self.cfg["dataset_split_ratio"] = float(
-            param_map["dataset_split_ratio"])
+        self.cfg["dataset_split_ratio"] = float(param_map["dataset_split_ratio"])
         self.cfg["output_folder"] = str(param_map["output_folder"])
 
 
@@ -112,17 +110,18 @@ class TrainYoloV11Classification(dnntrain.TrainProcess):
             # Load the YAML config file
             with open(param.cfg["config_file"], 'r') as file:
                 config_file = yaml.safe_load(file)
+
             self.model_weights = config_file["model"]
         else:
             # Set path
-            model_folder = os.path.join(os.path.dirname(
-                os.path.realpath(__file__)), "weights")
-            self.model_weights = os.path.join(
-                str(model_folder), f'{param.cfg["model_name"]}.pt')
+            model_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "weights")
+            self.model_weights = os.path.join(str(model_folder), f'{param.cfg["model_name"]}.pt')
+
             # Download model if not exist
             if not os.path.isfile(self.model_weights):
                 url = f'https://github.com/{self.repo}/releases/download/{self.version}/{param.cfg["model_name"]}.pt'
                 download(url=url, dir=model_folder, unzip=True)
+
         self.model = YOLO(self.model_weights)
 
         # Add custom MLflow callback to the model
@@ -136,8 +135,7 @@ class TrainYoloV11Classification(dnntrain.TrainProcess):
         # Create output folder
         experiment_name = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         os.makedirs(param.cfg["output_folder"], exist_ok=True)
-        output_folder = os.path.join(
-            param.cfg["output_folder"], experiment_name)
+        output_folder = os.path.join(param.cfg["output_folder"], experiment_name)
         os.makedirs(output_folder, exist_ok=True)
 
         # Train the model
@@ -145,7 +143,6 @@ class TrainYoloV11Classification(dnntrain.TrainProcess):
             # Extract the custom argument-value pairs
             custom_args = {k: v for k, v in config_file.items()}
             self.model.train(**custom_args)
-
         else:
             self.model.train(
                 data=dataset_folder,
@@ -187,7 +184,8 @@ class TrainYoloV11ClassificationFactory(dataprocess.CTaskFactory):
         self.info.short_description = "Train YOLO11 classification models."
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Classification"
-        self.info.version = "1.0.0"
+        self.info.version = "1.1.0"
+        self.info.min_ikomia_version = "0.15.0"
         self.info.icon_path = "images/icon.png"
         self.info.authors = "Jocher, G., Chaurasia, A., & Qiu, J"
         self.info.article = "YOLO by Ultralytics"
@@ -203,6 +201,11 @@ class TrainYoloV11ClassificationFactory(dataprocess.CTaskFactory):
         self.info.keywords = "YOLO, classification, ultralytics, imagenet"
         self.info.algo_type = core.AlgoType.TRAIN
         self.info.algo_tasks = "CLASSIFICATION"
+        # Min hardware config
+        self.info.hardware_config.min_cpu = 4
+        self.info.hardware_config.min_ram = 16
+        self.info.hardware_config.gpu_required = True
+        self.info.hardware_config.min_vram = 16
 
     def create(self, param=None):
         # Create algorithm object
