@@ -1,9 +1,10 @@
+# PyQt GUI framework
+from PyQt6.QtWidgets import *
+
 from ikomia import core, dataprocess
 from ikomia.utils import pyqtutils, qtconversion
-from train_yolo_v11_classification.train_yolo_v11_classification_process import TrainYoloV11ClassificationParam
 
-# PyQt GUI framework
-from PyQt5.QtWidgets import *
+from train_yolo_v11_classification.train_yolo_v11_classification_process import TrainYoloV11ClassificationParam
 
 
 # --------------------
@@ -39,7 +40,7 @@ class TrainYoloV11ClassificationWidget(core.CWorkflowTaskWidget):
             self.grid_layout, label="Dataset folder",
             path=self.parameters.cfg["dataset_folder"],
             tooltip="Select folder",
-            mode=QFileDialog.Directory
+            mode=QFileDialog.FileMode.Directory
         )
 
         # Epochs
@@ -61,7 +62,7 @@ class TrainYoloV11ClassificationWidget(core.CWorkflowTaskWidget):
         self.label_hyp = QLabel("Hyper-parameters file")
         self.browse_hyp_file = pyqtutils.BrowseFileWidget(path=self.parameters.cfg["config_file"],
                                                           tooltip="Select file",
-                                                          mode=QFileDialog.ExistingFile)
+                                                          mode=QFileDialog.FileMode.ExistingFile)
 
         row = self.grid_layout.rowCount()
         self.grid_layout.addWidget(self.label_hyp, row, 0)
@@ -75,7 +76,7 @@ class TrainYoloV11ClassificationWidget(core.CWorkflowTaskWidget):
             self.grid_layout, label="Output folder",
             path=self.parameters.cfg["output_folder"],
             tooltip="Select folder",
-            mode=QFileDialog.Directory
+            mode=QFileDialog.FileMode.Directory
         )
 
         # PyQt -> Qt wrapping
